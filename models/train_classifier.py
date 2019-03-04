@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import re
 import sqlalchemy
+import pickle
 import nltk
 nltk.download(['punkt', 'wordnet', 'averaged_perceptron_tagger','stopwords'])
 from nltk.tokenize import word_tokenize
@@ -73,7 +74,8 @@ def evaluate_model(model, X_test, Y_test, category_names):
 
 
 def save_model(model, model_filepath):
-    
+    #Save the model in pickle file
+    pickle.dump(model, open(model_filepath, 'wb'))
 
 
 def main():
