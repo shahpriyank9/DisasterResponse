@@ -18,7 +18,7 @@ from sklearn.model_selection import train_test_split,GridSearchCV
 from sklearn.metrics import classification_report
 
 def load_data(database_filepath):
-    database_name = 'sqlite:///'+database_filepath+'.db'
+    database_name = 'sqlite:///'+database_filepath
     engine = create_engine(database_name)
     df = pd.read_sql_table('disasterResponseData',engine)
     X = df.message.values
@@ -54,9 +54,9 @@ def build_model():
     
     param_grid = {
         'vect__ngram_range': ((1, 1), (1, 2)),
-        'clf__min_samples_split': [5, 10],
-        'clf__min_samples_leaf':[2,5]
-        'clf__n_estimators': [100, 250]
+        'clf__estimator__min_samples_split': [5, 10],
+        'clf__estimator__min_samples_leaf':[2,5],
+        'clf__estimator__n_estimators': [100, 250]
     }
     
     cv = GridSearchCV(pipeline, param_grid=param_grid, verbose=2, n_jobs=-1)
