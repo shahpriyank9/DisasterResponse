@@ -23,7 +23,7 @@ def load_data(database_filepath):
     df = pd.read_sql_table('disasterResponseData',engine)
     X = df.message.values
     Y = df.drop(['id', 'message', 'original', 'genre'],axis=1)
-    categories=Y.columns.values
+    categories=Y.columns
     return  X,Y,categories
 
 
@@ -55,11 +55,11 @@ def build_model():
     param_grid = {
         'vect__ngram_range': ((1, 1), (1, 2)),
         'clf__estimator__min_samples_split': [5, 10],
-        'clf__estimator__min_samples_leaf':[2,5],
-        'clf__estimator__n_estimators': [100, 250]
+        #'clf__estimator__min_samples_leaf':[2,5]
+        #'clf__estimator__n_estimators': [100, 250]
     }
     
-    cv = GridSearchCV(pipeline, param_grid=param_grid, verbose=2, n_jobs=-1)
+    cv = GridSearchCV(pipeline, param_grid=param_grid, verbose=2)
     return cv
     
 
@@ -67,7 +67,9 @@ def evaluate_model(model, X_test, Y_test, category_names):
     #predictions 
     y_preds = model.predict(X_test)
     #classification report
-    print(classification_report(y_preds, Y_test.values, target_names=category_names))
+    for i,col in enumerate(category_names.values):
+        print("Evaluation Values for column '{}'".format(col))
+        print(classification_report(y_test[col].values,y_pred[:,i]))
     #accuracy
     print('Accuracy : {}'.format(np.mean(Y_test.values == y_preds)))
 
