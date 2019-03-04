@@ -65,13 +65,13 @@ def build_model():
 
 def evaluate_model(model, X_test, Y_test, category_names):
     #predictions 
-    y_preds = model.predict(X_test)
+    y_pred = model.predict(X_test)
     #classification report
     for i,col in enumerate(category_names.values):
         print("Evaluation Values for column '{}'".format(col))
-        print(classification_report(y_test[col].values,y_pred[:,i]))
+        print(classification_report(Y_test[col].values,y_pred[:,i]))
     #accuracy
-    print('Accuracy : {}'.format(np.mean(Y_test.values == y_preds)))
+    print('Accuracy : {}'.format(np.mean(Y_test.values == y_pred)))
 
 
 
