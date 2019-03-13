@@ -1,10 +1,13 @@
 import json
 import plotly
 import pandas as pd
-
+import re
+import nltk
+nltk.download(['punkt', 'wordnet', 'averaged_perceptron_tagger','stopwords'])
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
-
+from nltk.corpus import stopwords
+from collections import Counter
 from flask import Flask
 from flask import render_template, request, jsonify
 from plotly.graph_objs import Bar
@@ -15,9 +18,14 @@ from sqlalchemy import create_engine
 app = Flask(__name__)
 
 def tokenize(text):
+    #Normalizing the sentence(Removed punctuation , converted to lower case)
+    text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower())
+    #tokenize the message
     tokens = word_tokenize(text)
+    #Remove stop words
+    tokens = [t for t in tokens if t not in stopwords.words("english")]
+    #lemmatize 
     lemmatizer = WordNetLemmatizer()
-
     clean_tokens = []
     for tok in tokens:
         clean_tok = lemmatizer.lemmatize(tok).lower().strip()
@@ -43,17 +51,10 @@ def index():
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
     
-    #Calculate word count in the dataset 
-    counter = Counter()
-    messages=df.message.values
-    for message in messages :
-        tokens = tokenize(message)
-        for token in tokens :
-            counter[token] += 1
-    #10 most common words in the dataset
-    top_10 = counter.most_common(10)
-    top_10_words = [word[0] for word in top_10]
-    top_10_counts = [count[1] for count in top_10]
+    #Target count percentage
+    class_percentage = df.drop(['id','message','original','genre','related'], axis=1).mean()*100
+    class_names = list(class_percentage.index)
+    
     
     
     # create visuals
@@ -78,20 +79,19 @@ def index():
             }
         },
         {
-            'data': [
+            'data':[
                 Bar(
-                    x=top_10_words,
-                    y=top_10_counts
+                    x=class_names,
+                    y=class_percentage
                 )
             ],
-
-            'layout': {
-                'title': 'Top 10 Words in dataset',
-                'yaxis': {
-                    'title': "Count"
-                },
+            'layout':{
+                'title':'Percentage of data per class',
                 'xaxis': {
-                    'title': "Words"
+                    'title': 'Class'
+                },
+                'yaxis': {
+                    'title': 'Percentage'
                 }
             }
         }
