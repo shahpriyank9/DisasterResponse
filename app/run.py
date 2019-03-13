@@ -26,11 +26,11 @@ def tokenize(text):
     return clean_tokens
 
 # load data
-engine = create_engine('sqlite:///../data/YourDatabaseName.db')
-df = pd.read_sql_table('YourTableName', engine)
+engine = create_engine('sqlite:///../data/DisasterResponse.db')
+df = pd.read_sql_table('disasterResponseData', engine)
 
 # load model
-model = joblib.load("../models/your_model_name.pkl")
+model = joblib.load("../models/classifier.pkl")
 
 
 # index webpage displays cool visuals and receives user input text for model
@@ -42,6 +42,19 @@ def index():
     # TODO: Below is an example - modify to extract data for your own visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
+    
+    #Calculate word count in the dataset 
+    counter = Counter()
+    messages=df.message.values
+    for message in messages :
+        tokens = tokenize(message)
+        for token in tokens :
+            counter[token] += 1
+    #10 most common words in the dataset
+    top_10 = counter.most_common(10)
+    top_10_words = [word[0] for word in top_10]
+    top_10_counts = [count[1] for count in top_10]
+    
     
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
@@ -61,6 +74,24 @@ def index():
                 },
                 'xaxis': {
                     'title': "Genre"
+                }
+            }
+        },
+        {
+            'data': [
+                Bar(
+                    x=top_10_words,
+                    y=top_10_counts
+                )
+            ],
+
+            'layout': {
+                'title': 'Top 10 Words in dataset',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Words"
                 }
             }
         }
