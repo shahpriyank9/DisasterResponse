@@ -18,6 +18,15 @@ from sqlalchemy import create_engine
 app = Flask(__name__)
 
 def tokenize(text):
+    '''
+    input: (
+    text: Message to tokenize : str
+    )
+    output: (
+    clean_tokens : list of cleaned vectorized tokens : list
+    )
+    This function is used to get cleaned vecotrized tokens from meassage to be classified
+    '''
     #Normalizing the sentence(Removed punctuation , converted to lower case)
     text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower())
     #tokenize the message

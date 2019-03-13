@@ -18,6 +18,17 @@ from sklearn.model_selection import train_test_split,GridSearchCV
 from sklearn.metrics import classification_report
 
 def load_data(database_filepath):
+    '''
+    input: (
+        database_filepath: path to database : str
+    )
+    output: (
+        X: features : dataframe 
+        y: target : dataframe
+        category_names: names of targets : series
+    )
+    This function loads the data from database file and returns features,target and target_names
+    '''
     database_name = 'sqlite:///'+database_filepath
     engine = create_engine(database_name)
     df = pd.read_sql_table('disasterResponseData',engine)
@@ -28,6 +39,15 @@ def load_data(database_filepath):
 
 
 def tokenize(text):
+    '''
+    input: (
+    text: Message to tokenize : str
+    )
+    output: (
+    clean_tokens : list of cleaned vectorized tokens : list
+    )
+    This function is used to get cleaned vecotrized tokens from meassage to be classified
+    '''
     #Normalizing the sentence(Removed punctuation , converted to lower case)
     text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower())
     #tokenize the message
@@ -45,7 +65,12 @@ def tokenize(text):
 
 
 def build_model():
-    
+    '''
+    output(
+       cv : outputs model to be trained using grid search cv : object
+    )
+    This function instanciates the model using Pipeline and grid search cv and returns the object
+    '''
     pipeline = Pipeline([
         ('vect',CountVectorizer(tokenizer=tokenize)),
         ('tfidf', TfidfTransformer()),
@@ -64,6 +89,15 @@ def build_model():
     
 
 def evaluate_model(model, X_test, Y_test, category_names):
+    '''
+    input(
+        model: model to be evaluated : object
+        X_test: testing features : dataframe
+        Y_test: testing target : dataframe
+        category_names: list of clases : series
+    )
+    This function prints the evalutaion of the model with metrics such as F1 score, precision , recall and overall accuracy against the         testing data.
+    '''
     #predictions 
     y_pred = model.predict(X_test)
     #classification report
@@ -76,6 +110,13 @@ def evaluate_model(model, X_test, Y_test, category_names):
 
 
 def save_model(model, model_filepath):
+    '''
+    input(
+        model: model to be saved : object
+        model_filepath: path where model is to be saved : str
+    )
+    This function saves the model in a pickle file at the path specified
+    '''
     #Save the model in pickle file
     pickle.dump(model, open(model_filepath, 'wb'))
 
