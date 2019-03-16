@@ -1,6 +1,7 @@
 import json
 import plotly
 import pandas as pd
+import numpy as np
 import re
 import nltk
 nltk.download(['punkt', 'wordnet', 'averaged_perceptron_tagger','stopwords'])
@@ -45,10 +46,10 @@ def tokenize(text):
 # load data
 engine = create_engine('sqlite:///../data/DisasterResponse.db')
 df = pd.read_sql_table('disasterResponseData', engine)
-
 # load model
 model = joblib.load("../models/classifier.pkl")
-
+#load visualization
+top_10_word_count = np.load('../data/top_10_word_count.npz')
 
 # index webpage displays cool visuals and receives user input text for model
 @app.route('/')
@@ -64,6 +65,9 @@ def index():
     class_percentage = df.drop(['id','message','original','genre','related'], axis=1).mean()*100
     class_names = list(class_percentage.index)
     
+    #Top 10 word count
+    top_words=list(top_10_word_count['top_words'])
+    top_counts=list(top_10_word_count['top_counts'])
     
     
     # create visuals
@@ -101,6 +105,24 @@ def index():
                 },
                 'yaxis': {
                     'title': 'Percentage'
+                }
+            }
+        },
+        {
+            'data': [
+                Bar(
+                    x=top_words,
+                    y=top_counts
+                )
+            ],
+
+            'layout': {
+                'title': 'Top 10 word count',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Words"
                 }
             }
         }

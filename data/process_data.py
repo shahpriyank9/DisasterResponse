@@ -2,6 +2,38 @@ import sys
 import pandas as pd
 import numpy as np
 from sqlalchemy import create_engine
+from collections import Counter
+import re
+import nltk
+nltk.download(['punkt', 'wordnet', 'averaged_perceptron_tagger','stopwords'])
+from nltk.stem import WordNetLemmatizer
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+
+def tokenize(text):
+    '''
+    input: (
+    text: Message to tokenize : str
+    )
+    output: (
+    clean_tokens : list of cleaned vectorized tokens : list
+    )
+    This function is used to get cleaned vecotrized tokens from meassage to be classified
+    '''
+    #Normalizing the sentence(Removed punctuation , converted to lower case)
+    text = re.sub(r"[^a-zA-Z]", " ", text.lower())
+    #tokenize the message
+    tokens = word_tokenize(text)
+    #Remove stop words
+    tokens = [t for t in tokens if t not in stopwords.words("english")]
+    #lemmatize 
+    lemmatizer = WordNetLemmatizer()
+    clean_tokens = []
+    for tok in tokens:
+        clean_tok = lemmatizer.lemmatize(tok).lower().strip()
+        clean_tokens.append(clean_tok)
+
+    return clean_tokens
 
 def load_data(messages_filepath, categories_filepath):
     '''
@@ -77,13 +109,24 @@ def save_data(df, database_filename):
         database_filename: str object
         )
     
-    This function loads the data obtained after the cleaning process into sql database.
+    This function loads the data obtained after the cleaning process into sql database and saves some analyzed data for front end               visualizations.
     '''
     ###Load###
     #Load the data into sql table
     file_name = 'sqlite:///'+database_filename
     engine = create_engine(file_name)
     df.to_sql('disasterResponseData', engine, index=False)  
+    tokenized_message=df.message.apply(lambda x : tokenize(x))
+    counter=Counter()
+    for message in tokenized_message.values:
+        for token in message:
+            if len(token)>2 :
+                counter[token] += 1
+    # top 10 words 
+    top = counter.most_common(10)
+    top_words = [i[0] for i in top]
+    top_counts = [i[1] for i in top]
+    np.savez('data/top_10_word_count.npz', top_words=top_words, top_counts=top_counts)
 
 
 def main():
